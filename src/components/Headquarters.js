@@ -1,17 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { Grid } from "semantic-ui-react";
 import Details from "./Details";
 import "../stylesheets/Headquarters.css";
+import LogPanel from "./LogPanel";
+import ColdStorage from "./ColdStorage";
 
-function Headquarters() {
+function Headquarters({ items, setItems }) {
+  const [info, setInfo] = useState(null);
+  const [cards, setCards] = useState([]);
+
   return (
     <Grid celled="internally">
-      <Grid.Column width={8}>{/* Something goes here.... */}</Grid.Column>
+      <Grid.Column width={8}>
+        <ColdStorage
+          info={info}
+          setInfo={setInfo}
+          cards={cards}
+          setCards={setCards}
+        />
+      </Grid.Column>
       <Grid.Column width={5}>
-        <Details />
+        <Details
+          info={info}
+          setInfo={setInfo}
+          items={items}
+          setItems={setItems}
+          cards={cards}
+          setCards={setCards}
+        />
       </Grid.Column>
       <Grid.Column width={3}>
-        {/* and here. Take visual cues from the screenshot/video in the Readme. */}
+        <LogPanel />
       </Grid.Column>
     </Grid>
   );

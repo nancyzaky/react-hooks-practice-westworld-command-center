@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Radio,
   Icon,
@@ -10,34 +10,70 @@ import {
 } from "semantic-ui-react";
 import "../stylesheets/HostInfo.css";
 
-function HostInfo() {
+function HostInfo({ info, setInfo, items, setItems, cards, setCards }) {
+  console.log(info);
   // This state is just to show how the dropdown component works.
   // Options have to be formatted in this way (array of objects with keys of: key, text, value)
   // Value has to match the value in the object to render the right text.
 
   // IMPORTANT: But whether it should be stateful or not is entirely up to you. Change this component however you like.
-  const [options] = useState([
-    { key: "some_area", text: "Some Area", value: "some_area" },
-    { key: "another_area", text: "Another Area", value: "another_area" },
+  const [value, setValue] = useState(null);
+  const [id, setId] = useState(null);
+  const [active, setActive] = useState(null);
+  useEffect(() => {
+    setValue(info.area);
+    setActive(info.active);
+    console.log(active);
+    setId(info.id);
+  }, [info]);
+  const [options, setOption] = useState([
+    { key: "lowlands", text: "lowlands", value: "lowlands" },
+    { key: "high_plains", text: "high_plains", value: "high_plains" },
+    {
+      key: "under_construction",
+      text: "under_construction",
+      value: "under_construction",
+    },
+    { key: "pariah", text: "pariah", value: "pariah" },
+    { key: "python_pass", text: "python_pass", value: "python_pass" },
+    { key: "badlands", text: "badlands", value: "badlands" },
   ]);
 
-  const [value] = useState("some_area");
-
   function handleOptionChange(e, { value }) {
+    console.log(e.target.value);
+    setValue(e.target.value);
+    console.log(value);
     // the 'value' attribute is given via Semantic's Dropdown component.
     // Put a debugger or console.log in here and see what the "value" variable is when you pass in different options.
     // See the Semantic docs for more info: https://react.semantic-ui.com/modules/dropdown/#usage-controlled
   }
 
-  function handleRadioChange() {
-    console.log("The radio button fired");
+  function handleRadioChange(key) {
+    setActive((active) => {
+      console.log(active);
+      return !active;
+    });
+    console.log(active);
+    fetch(`http://localhost:4000/hosts/${key}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ active: active }),
+    })
+      .then((resp) => resp.json())
+      .then((data) => {
+        let newArr = cards.filter((card) => {
+          return card.id !== key;
+        });
+        console.log(newArr);
+        setCards([...cards, data]);
+      });
   }
 
   return (
     <Grid>
       <Grid.Column width={6}>
         <Image
-          src={/* pass in the right image here */ ""}
+          src={info.imageUrl}
           floated="left"
           size="small"
           className="hostImg"
@@ -47,16 +83,18 @@ function HostInfo() {
         <Card>
           <Card.Content>
             <Card.Header>
-              {"Bob"} | {true ? <Icon name="man" /> : <Icon name="woman" />}
-              {/* Think about how the above should work to conditionally render the right First Name and the right gender Icon */}
+              {info.firstName} |{" "}
+              {info.gender === "Male" ? (
+                <Icon name="man" />
+              ) : (
+                <Icon name="woman" />
+              )}
             </Card.Header>
             <Card.Meta>
-              {/* Sometimes the label should take "Decommissioned". How are we going to conditionally render that? */}
-              {/* Checked takes a boolean and determines what position the switch is in. Should it always be true? */}
               <Radio
-                onChange={handleRadioChange}
-                label={"Active"}
-                checked={true}
+                onChange={() => handleRadioChange(id)}
+                label={active ? "Active" : "Decommission"}
+                checked={active}
                 slider
               />
             </Card.Meta>
